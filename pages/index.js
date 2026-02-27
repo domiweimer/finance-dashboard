@@ -1,5 +1,9 @@
-import { useState, useEffect } from 'react';
 import Head from 'next/head';
+import { useState, useEffect } from 'react';
+import Script from 'next/script';
+import { Inter } from 'next/font/google';
+
+const inter = Inter({ subsets: ['latin'] });
 
 export default function Dashboard() {
   const [activeTab, setActiveTab] = useState('finanzen');
@@ -82,134 +86,98 @@ export default function Dashboard() {
     ));
   };
 
-  const styles = {
-    root: { '--primary': '#1a1a2e', '--accent': '#4f46e5', '--accent-light': '#8b5cf6', '--success': '#22C55E', '--danger': '#EF4444', '--warning': '#F59E0B', '--bg': '#f1f5f9', '--card': '#ffffff', '--text': '#1a1a2e', '--text-secondary': '#64748b', '--shadow': '0 4px 12px rgba(0,0,0,0.1)', '--radius': '12px', '--radius-sm': '8px' },
-    header: { background: '#1a1a2e', padding: '16px 24px', position: 'sticky', top: 0, zIndex: 100, boxShadow: '0 4px 20px rgba(0,0,0,0.2)' },
-    headerContent: { maxWidth: '1400px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-    logo: { color: 'white', fontSize: '1.5rem', fontWeight: 700 },
-    nav: { display: 'flex', gap: '8px', flexWrap: 'wrap' },
-    navBtn: (active) => ({ background: active ? '#4f46e5' : 'transparent', border: 'none', color: active ? 'white' : 'rgba(255,255,255,0.7)', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 500, transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', gap: '8px' }),
-    main: { maxWidth: '1400px', margin: '0 auto', padding: '24px' },
-    tabContent: (active) => ({ display: active ? 'block' : 'none', animation: 'fadeIn 0.3s ease' }),
-    card: { background: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '24px', marginBottom: '20px' },
-    statsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '24px' },
-    statCard: { background: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '20px' },
-    chartsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '20px', marginBottom: '24px' },
-    quadrant: (q) => ({ background: '#ffffff', borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', padding: '16px', minHeight: '200px', borderTop: `4px solid ${q === 'q1' ? '#EF4444' : q === 'q2' ? '#4f46e5' : q === 'q3' ? '#F59E0B' : '#94a3b8'}` }),
-  };
-
-  const renderFinanceCharts = () => {
-    if (!financeData) return null;
-    
-    const months = ['Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez','Jan','Feb'];
-    const monthKeys = ['2025-03','2025-04','2025-05','2025-06','2025-07','2025-08','2025-09','2025-10','2025-11','2025-12','2026-01','2026-02'];
-    const ausData = monthKeys.map(m => financeData.monthlyAusgaben?.[m] || 0);
-    const einData = monthKeys.map(m => financeData.monthlyEinnahmen?.[m] || 0);
-
-    return (
-      <>
-        <div className="chart-card" style={styles.card}>
-          <h3 style={{ fontSize: '1rem', marginBottom: '16px' }}>📊 Monatliche Ausgaben</h3>
-          <canvas id="barChart"></canvas>
-        </div>
-        <div className="chart-card" style={styles.card}>
-          <h3 style={{ fontSize: '1rem', marginBottom: '16px' }}>📈 Einnahmen vs Ausgaben</h3>
-          <canvas id="lineChart"></canvas>
-        </div>
-      </>
-    );
-  };
-
   return (
     <>
       <Head>
         <title>📊 Dashboard - Dominik</title>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <script src="https://cdn.jsdelivr.net/npm/chart.js" async></script>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <style>{`
-          * { box-sizing: border-box; margin: 0; padding: 0; }
-          body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; }
-          .header { background: #1a1a2e; padding: 16px 24px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-          .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
-          .logo { color: white; font-size: 1.5rem; font-weight: 700; }
-          .menu-toggle { display: none; background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; }
-          .nav { display: flex; gap: 8px; flex-wrap: wrap; }
-          .nav-btn { background: transparent; border: none; color: rgba(255,255,255,0.7); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
-          .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; }
-          .nav-btn.active { background: #4f46e5; color: white; }
-          .main { max-width: 1400px; margin: 0 auto; padding: 24px; }
-          .tab-content { display: none; animation: fadeIn 0.3s ease; }
-          .tab-content.active { display: block; }
-          @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-          .card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 20px; }
-          .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
-          .stat-card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 20px; }
-          .stat-card h3 { font-size: 0.8rem; text-transform: uppercase; color: #64748b; margin-bottom: 8px; letter-spacing: 0.5px; }
-          .stat-card .value { font-size: 1.8rem; font-weight: 700; }
-          .stat-card .value.positive { color: #22C55E; }
-          .stat-card .value.negative { color: #EF4444; }
-          .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 24px; }
-          .chart-card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 20px; }
-          .chart-card h3 { font-size: 1rem; margin-bottom: 16px; }
-          .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
-          .category-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f1f5f9; border-radius: 8px; }
-          .category-item span:last-child { font-weight: 600; color: #4f46e5; }
-          .transactions-table { width: 100%; border-collapse: collapse; }
-          .transactions-table th, .transactions-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-          .transactions-table th { font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: 600; }
-          .transactions-table tr:hover { background: #f1f5f9; }
-          .transactions-table td.amount { font-weight: 600; color: #EF4444; }
-          .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-          .project-card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 24px; border-left: 4px solid #4f46e5; }
-          .project-card.nordic { border-left-color: #8b5cf6; }
-          .project-card h3 { font-size: 1.1rem; margin-bottom: 8px; }
-          .project-card p { color: #64748b; font-size: 0.9rem; margin-bottom: 16px; }
-          .project-status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; }
-          .project-status.active { background: #dcfce7; color: #166534; }
-          .progress-bar { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; margin-top: 8px; }
-          .progress-fill { height: 100%; background: linear-gradient(90deg, #4f46e5, #8b5cf6); border-radius: 4px; transition: width 0.3s ease; }
-          .calendar-section { margin-bottom: 24px; }
-          .calendar-section h3 { font-size: 1rem; margin-bottom: 12px; color: #64748b; }
-          .event-list { display: grid; gap: 12px; }
-          .event-item { display: flex; align-items: center; gap: 16px; padding: 16px; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 3px solid #4f46e5; }
-          .event-item.personal { border-left-color: #8b5cf6; }
-          .event-time { min-width: 100px; font-size: 0.85rem; color: #64748b; }
-          .event-title { flex: 1; font-weight: 500; }
-          .event-location { font-size: 0.85rem; color: #64748b; }
-          .no-events { color: #64748b; font-style: italic; padding: 20px; text-align: center; }
-          .eisenhower-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
-          .quadrant { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 16px; min-height: 200px; }
-          .quadrant.q1 { border-top: 4px solid #EF4444; }
-          .quadrant.q2 { border-top: 4px solid #4f46e5; }
-          .quadrant.q3 { border-top: 4px solid #F59E0B; }
-          .quadrant.q4 { border-top: 4px solid #94a3b8; }
-          .quadrant h4 { font-size: 0.9rem; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
-          .quadrant.q1 h4 { color: #EF4444; }
-          .quadrant.q2 h4 { color: #4f46e5; }
-          .quadrant.q3 h4 { color: #F59E0B; }
-          .quadrant.q4 h4 { color: #94a3b8; }
-          .quadrant .subtitle { font-size: 0.75rem; color: #64748b; margin-bottom: 12px; }
-          .todo-list { list-style: none; }
-          .add-todo-form { display: flex; gap: 12px; flex-wrap: wrap; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
-          .add-todo-form input[type="text"] { flex: 1; min-width: 200px; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; font-family: inherit; }
-          .add-todo-form input[type="text"]:focus { outline: none; border-color: #4f46e5; }
-          .add-todo-form select { padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; font-family: inherit; background: white; cursor: pointer; }
-          .add-todo-form button { padding: 12px 24px; background: #4f46e5; color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
-          .add-todo-form button:hover { background: #4338ca; }
-          @media (max-width: 768px) {
-            .menu-toggle { display: block; }
-            .nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #1a1a2e; flex-direction: column; padding: 16px; gap: 4px; }
-            .nav.open { display: flex; }
-            .nav-btn { width: 100%; justify-content: flex-start; }
-            .charts-grid { grid-template-columns: 1fr; }
-            .eisenhower-grid { grid-template-columns: 1fr; }
-            .transactions-table { font-size: 0.85rem; }
-            .add-todo-form { flex-direction: column; }
-            .add-todo-form select, .add-todo-form button { width: 100%; }
-          }
-        `}</style>
+        <meta name="description" content="Personal dashboard for Dominik" />
       </Head>
+      
+      <Script src="https://cdn.jsdelivr.net/npm/chart.js" strategy="lazyOnload" />
+      
+      <style jsx global>{`
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: ${inter.style.fontFamily}, system-ui, -apple-system, sans-serif; background: #f1f5f9; color: #1a1a2e; min-height: 100vh; }
+        .header { background: #1a1a2e; padding: 16px 24px; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+        .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; }
+        .logo { color: white; font-size: 1.5rem; font-weight: 700; }
+        .menu-toggle { display: none; background: none; border: none; color: white; font-size:rem; cursor: 1.5 pointer; }
+        .nav { display: flex; gap: 8px; flex-wrap: wrap; }
+        .nav-btn { background: transparent; border: none; color: rgba(255,255,255,0.7); padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.95rem; font-weight: 500; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
+        .nav-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+        .nav-btn.active { background: #4f46e5; color: white; }
+        .main { max-width: 1400px; margin: 0 auto; padding: 24px; }
+        .tab-content { display: none; animation: fadeIn 0.3s ease; }
+        .tab-content.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 24px; margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 20px; }
+        .stat-card h3 { font-size: 0.8rem; text-transform: uppercase; color: #64748b; margin-bottom: 8px; letter-spacing: 0.5px; }
+        .stat-card .value { font-size: 1.8rem; font-weight: 700; }
+        .stat-card .value.positive { color: #22C55E; }
+        .stat-card .value.negative { color: #EF4444; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .chart-card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 20px; }
+        .chart-card h3 { font-size: 1rem; margin-bottom: 16px; }
+        .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
+        .category-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #f1f5f9; border-radius: 8px; }
+        .category-item span:last-child { font-weight: 600; color: #4f46e5; }
+        .transactions-table { width: 100%; border-collapse: collapse; }
+        .transactions-table th, .transactions-table td { padding: 12px; text-align: left; border-bottom: 1px solid #e2e8f0; }
+        .transactions-table th { font-size: 0.8rem; text-transform: uppercase; color: #64748b; font-weight: 600; }
+        .transactions-table tr:hover { background: #f1f5f9; }
+        .transactions-table td.amount { font-weight: 600; color: #EF4444; }
+        .projects-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .project-card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 24px; border-left: 4px solid #4f46e5; }
+        .project-card.nordic { border-left-color: #8b5cf6; }
+        .project-card h3 { font-size: 1.1rem; margin-bottom: 8px; }
+        .project-card p { color: #64748b; font-size: 0.9rem; margin-bottom: 16px; }
+        .project-status { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; margin-bottom: 12px; }
+        .project-status.active { background: #dcfce7; color: #166534; }
+        .progress-bar { height: 8px; background: #f1f5f9; border-radius: 4px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #4f46e5, #8b5cf6); border-radius: 4px; transition: width 0.3s ease; }
+        .calendar-section { margin-bottom: 24px; }
+        .calendar-section h3 { font-size: 1rem; margin-bottom: 12px; color: #64748b; }
+        .event-list { display: grid; gap: 12px; }
+        .event-item { display: flex; align-items: center; gap: 16px; padding: 16px; background: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 3px solid #4f46e5; }
+        .event-item.personal { border-left-color: #8b5cf6; }
+        .event-time { min-width: 100px; font-size: 0.85rem; color: #64748b; }
+        .event-title { flex: 1; font-weight: 500; }
+        .event-location { font-size: 0.85rem; color: #64748b; }
+        .no-events { color: #64748b; font-style: italic; padding: 20px; text-align: center; }
+        .eisenhower-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 24px; }
+        .quadrant { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 16px; min-height: 200px; }
+        .quadrant.q1 { border-top: 4px solid #EF4444; }
+        .quadrant.q2 { border-top: 4px solid #4f46e5; }
+        .quadrant.q3 { border-top: 4px solid #F59E0B; }
+        .quadrant.q4 { border-top: 4px solid #94a3b8; }
+        .quadrant h4 { font-size: 0.9rem; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; }
+        .quadrant.q1 h4 { color: #EF4444; }
+        .quadrant.q2 h4 { color: #4f46e5; }
+        .quadrant.q3 h4 { color: #F59E0B; }
+        .quadrant.q4 h4 { color: #94a3b8; }
+        .quadrant .subtitle { font-size: 0.75rem; color: #64748b; margin-bottom: 12px; }
+        .todo-list { list-style: none; }
+        .add-todo-form { display: flex; gap: 12px; flex-wrap: wrap; background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .add-todo-form input[type="text"] { flex: 1; min-width: 200px; padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; font-family: inherit; }
+        .add-todo-form input[type="text"]:focus { outline: none; border-color: #4f46e5; }
+        .add-todo-form select { padding: 12px 16px; border: 2px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; font-family: inherit; background: white; cursor: pointer; }
+        .add-todo-form button { padding: 12px 24px; background: #4f46e5; color: white; border: none; border-radius: 8px; font-size: 0.95rem; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .add-todo-form button:hover { background: #4338ca; }
+        @media (max-width: 768px) {
+          .menu-toggle { display: block; }
+          .nav { display: none; position: absolute; top: 100%; left: 0; right: 0; background: #1a1a2e; flex-direction: column; padding: 16px; gap: 4px; }
+          .nav.open { display: flex; }
+          .nav-btn { width: 100%; justify-content: flex-start; }
+          .charts-grid { grid-template-columns: 1fr; }
+          .eisenhower-grid { grid-template-columns: 1fr; }
+          .transactions-table { font-size: 0.85rem; }
+          .add-todo-form { flex-direction: column; }
+          .add-todo-form select, .add-todo-form button { width: 100%; }
+        }
+      `}</style>
       
       <header className="header">
         <div className="header-content">
