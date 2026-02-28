@@ -11,13 +11,24 @@ export default function Dashboard() {
   const [calendarData, setCalendarData] = useState(null);
   const [todos, setTodos] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
-  // Load finance data
-  useEffect(() => {
+  // Load finance data with auto-refresh
+  const loadFinanceData = () => {
     fetch('/api/finance')
       .then(res => res.json())
-      .then(setFinanceData)
+      .then(data => {
+        setFinanceData(data);
+        setLastUpdated(new Date());
+      })
       .catch(console.error);
+  };
+
+  useEffect(() => {
+    loadFinanceData();
+    // Auto-refresh every 5 minutes
+    const interval = setInterval(loadFinanceData, 5 * 60 * 1000);
+    return () => clearInterval(interval);
   }, []);
 
   // Load calendar data when tab is active
@@ -118,7 +129,7 @@ export default function Dashboard() {
         .stat-card .value { font-size: 1.8rem; font-weight: 700; }
         .stat-card .value.positive { color: #22C55E; }
         .stat-card .value.negative { color: #EF4444; }
-        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 20px; margin-bottom: 24px; }
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 20px; margin-bottom: 24px; }
         .chart-card { background: #ffffff; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 20px; }
         .chart-card h3 { font-size: 1rem; margin-bottom: 16px; }
         .category-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; }
@@ -195,6 +206,13 @@ export default function Dashboard() {
       <main className="main">
         {/* Finanzen Tab */}
         <div className={`tab-content ${activeTab === 'finanzen' ? 'active' : ''}`}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2 style={{ fontSize: '1.5rem', fontWeight: '700' }}>💰 Finanzen</h2>
+            <button onClick={loadFinanceData} style={{ background: '#4f46e5', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              🔄 Aktualisieren
+            </button>
+          </div>
+          {lastUpdated && <p style={{ fontSize: '0.8rem', color: '#64748b', marginBottom: '16px' }}>Zuletzt aktualisiert: {lastUpdated.toLocaleTimeString('de-DE')}</p>}
           <div className="stats-grid">
             <div className="stat-card">
               <h3>Ausgaben</h3>
@@ -220,6 +238,10 @@ export default function Dashboard() {
             <div className="chart-card">
               <h3>📈 Einnahmen vs Ausgaben</h3>
               <canvas id="lineChart"></canvas>
+            </div>
+            <div className="chart-card">
+              <h3>🥧 Ausgaben nach Kategorie</h3>
+              <canvas id="pieChart"></canvas>
             </div>
           </div>
           
@@ -367,6 +389,29 @@ export default function Dashboard() {
                       ] 
                     },
                     options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+                  });
+                }
+                
+                // Pie chart for categories
+                const pieEl = document.getElementById('pieChart');
+                const categories = ${JSON.stringify(financeData?.categories || [])};
+                if (pieEl && !pieEl.chart && categories.length > 0) {
+                  const topCategories = categories.slice(0, 8);
+                  const otherAmount = categories.slice(8).reduce((sum, c) => sum + c.amount, 0);
+                  const pieLabels = topCategories.map(c => c.name);
+                  const pieData = topCategories.map(c => c.amount);
+                  if (otherAmount > 0) {
+                    pieLabels.push('Sonstiges');
+                    pieData.push(otherAmount);
+                  }
+                  const colors = ['#4f46e5', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b', '#ef4444', '#ec4899', '#6366f1', '#94a3b8'];
+                  pieEl.chart = new Chart(pieEl, {
+                    type: 'doughnut',
+                    data: {
+                      labels: pieLabels,
+                      datasets: [{ data: pieData, backgroundColor: colors.slice(0, pieLabels.length), borderWidth: 0 }]
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'right' } } }
                   });
                 }
               }

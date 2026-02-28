@@ -1,41 +1,97 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/pages/api-reference/create-next-app).
+# 💰 Finance Dashboard
 
-## Getting Started
+A personal finance dashboard that displays income and expenses from Google Sheets, built with Next.js and Chart.js.
 
-First, run the development server:
+![Finance Dashboard](https://img.shields.io/badge/Next.js-14.2-black) ![Vercel Ready](https://img.shields.io/badge/Vercel-Ready-black)
+
+## Features
+
+- 📊 **Bar Chart** - Monthly expenses visualization
+- 📈 **Line Chart** - Income vs Expenses over time
+- 🥧 **Pie Chart** - Expenses by category
+- 💰 **Totals** - Ausgaben (expenses), Einnahmen (income), Netto
+- 🔄 **Auto-refresh** - Updates every 5 minutes
+- 📋 **Transactions** - Recent transactions list
+
+## Google Sheets Structure
+
+The dashboard expects a Google Sheet with two tabs:
+
+### "Ausgaben" (Expenses)
+| Datum | Quelle | Kategorie | Betrag_EUR | Referenz | Notizen |
+|-------|--------|-----------|------------|----------|---------|
+| 01.01.2026 | Amazon | Online | 50,00 | ... | ... |
+
+### "Einnahmen" (Income)
+| Datum | Quelle | Kategorie | Betrag_EUR | Referenz | Notizen |
+|-------|--------|-----------|------------|----------|---------|
+| 01.01.2026 | Arbeit | Gehalt | 3000,00 | ... | ... |
+
+**Sheet ID:** `1Z15lr6tatNY8mHf0UctJYROScUbMirAZlgTleAwJzgk`
+
+## Deployment to Vercel
+
+### Option 1: Service Account (Recommended)
+
+1. **Create a Service Account:**
+   - Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+   - Create a new Project (or use existing)
+   - Go to Credentials > Create Credentials > Service Account
+   - Download the JSON key file
+
+2. **Share your Google Sheet:**
+   - Open your Google Sheet
+   - Click "Teilen" (Share)
+   - Add the service account email (e.g., `dashboard@project.iam.gserviceaccount.com`)
+   - Give it "Bearbeiter" (Editor) access
+
+3. **Deploy to Vercel:**
+   ```bash
+   npm install -g vercel
+   vercel
+   ```
+
+4. **Set Environment Variables in Vercel:**
+   - `GOOGLE_SERVICE_ACCOUNT_EMAIL` = your-service-account@project.iam.gserviceaccount.com
+   - `GOOGLE_PRIVATE_KEY` = The private key from your JSON file (replace `\n` with actual newlines)
+
+### Option 2: OAuth Token
+
+For simpler setup, you can use an OAuth access token:
+- `GOOGLE_ACCESS_TOKEN` = Your OAuth access token
+
+Note: Access tokens expire, so this method requires periodic token refresh.
+
+## Development
 
 ```bash
+# Install dependencies
+npm install
+
+# Run locally
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+## Project Structure
 
-[API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+```
+├── pages/
+│   ├── api/
+│   │   └── finance.js      # Google Sheets API integration
+│   └── index.js            # Main dashboard UI
+├── public/
+├── .env.example            # Environment variable template
+└── package.json
+```
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/pages/building-your-application/routing/api-routes) instead of React pages.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/pages/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Next.js 14** - React framework
+- **Chart.js** - Beautiful charts
+- **Google Sheets API v4** - Data source
 
-## Learn More
+## License
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn-pages-router) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/pages/building-your-application/deploying) for more details.
-# Update
+MIT
