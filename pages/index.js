@@ -24,6 +24,83 @@ export default function Dashboard() {
       .catch(console.error);
   };
 
+  // Initialize charts when finance data is loaded and Chart.js is available
+  useEffect(() => {
+    if (!financeData) return;
+
+    // Wait for Chart.js to be available
+    const initCharts = () => {
+      if (typeof Chart === 'undefined') {
+        setTimeout(initCharts, 100);
+        return;
+      }
+
+      const months = ['Mär', 'Apr', 'Mai', 'Jun', 'Jul', 'Aug', 'Sep', 'Okt', 'Nov', 'Dez', 'Jan', 'Feb'];
+      const monthKeys = ['2025-03', '2025-04', '2025-05', '2025-06', '2025-07', '2025-08', '2025-09', '2025-10', '2025-11', '2025-12', '2026-01', '2026-02'];
+      const ausData = monthKeys.map(m => financeData.monthlyAusgaben?.[m] || 0);
+      const einData = monthKeys.map(m => financeData.monthlyEinnahmen?.[m] || 0);
+
+      // Destroy existing charts first
+      const barEl = document.getElementById('barChart');
+      const lineEl = document.getElementById('lineChart');
+      const pieEl = document.getElementById('pieChart');
+
+      if (barEl?.chart) { barEl.chart.destroy(); }
+      if (lineEl?.chart) { lineEl.chart.destroy(); }
+      if (pieEl?.chart) { pieEl.chart.destroy(); }
+
+      // Bar chart - monthly expenses
+      if (barEl) {
+        barEl.chart = new Chart(barEl, {
+          type: 'bar',
+          data: {
+            labels: months,
+            datasets: [{ label: 'Ausgaben', data: ausData, backgroundColor: '#4f46e5', borderRadius: 4 }]
+          },
+          options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+
+      // Line chart - income vs expenses
+      if (lineEl) {
+        lineEl.chart = new Chart(lineEl, {
+          type: 'line',
+          data: {
+            labels: months,
+            datasets: [
+              { label: 'Einnahmen', data: einData, borderColor: '#22C55E', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3 },
+              { label: 'Ausgaben', data: ausData, borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 }
+            ]
+          },
+          options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
+        });
+      }
+
+      // Pie/Doughnut chart - categories
+      if (pieEl && financeData.categories?.length > 0) {
+        const topCategories = financeData.categories.slice(0, 8);
+        const otherAmount = financeData.categories.slice(8).reduce((sum, c) => sum + c.amount, 0);
+        const pieLabels = topCategories.map(c => c.name);
+        const pieData = topCategories.map(c => c.amount);
+        if (otherAmount > 0) {
+          pieLabels.push('Sonstiges');
+          pieData.push(otherAmount);
+        }
+        const colors = ['#4f46e5', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b', '#ef4444', '#ec4899', '#6366f1', '#94a3b8'];
+        pieEl.chart = new Chart(pieEl, {
+          type: 'doughnut',
+          data: {
+            labels: pieLabels,
+            datasets: [{ data: pieData, backgroundColor: colors.slice(0, pieLabels.length), borderWidth: 0 }]
+          },
+          options: { responsive: true, plugins: { legend: { position: 'right' } } }
+        });
+      }
+    };
+
+    initCharts();
+  }, [financeData]);
+
   useEffect(() => {
     loadFinanceData();
     // Auto-refresh every 5 minutes
@@ -356,69 +433,8 @@ export default function Dashboard() {
         </div>
       </main>
 
-      {/* Load Chart.js and initialize charts */}
-      {financeData && activeTab === 'finanzen' && (
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              if (typeof Chart !== 'undefined') {
-                const months = ['Mär','Apr','Mai','Jun','Jul','Aug','Sep','Okt','Nov','Dez','Jan','Feb'];
-                const monthKeys = ['2025-03','2025-04','2025-05','2025-06','2025-07','2025-08','2025-09','2025-10','2025-11','2025-12','2026-01','2026-02'];
-                const ausData = monthKeys.map(m => ${JSON.stringify(financeData?.monthlyAusgaben || {})}?.[m] || 0);
-                const einData = monthKeys.map(m => ${JSON.stringify(financeData?.monthlyEinnahmen || {})}?.[m] || 0);
-                
-                const barEl = document.getElementById('barChart');
-                const lineEl = document.getElementById('lineChart');
-                
-                if (barEl && !barEl.chart) {
-                  barEl.chart = new Chart(barEl, {
-                    type: 'bar',
-                    data: { labels: months, datasets: [{ label: 'Ausgaben', data: ausData, backgroundColor: '#4f46e5', borderRadius: 4 }] },
-                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
-                  });
-                }
-                
-                if (lineEl && !lineEl.chart) {
-                  lineEl.chart = new Chart(lineEl, {
-                    type: 'line',
-                    data: { 
-                      labels: months, 
-                      datasets: [
-                        { label: 'Einnahmen', data: einData, borderColor: '#22C55E', backgroundColor: 'rgba(34,197,94,0.1)', fill: true, tension: 0.3 },
-                        { label: 'Ausgaben', data: ausData, borderColor: '#EF4444', backgroundColor: 'rgba(239,68,68,0.1)', fill: true, tension: 0.3 }
-                      ] 
-                    },
-                    options: { responsive: true, plugins: { legend: { position: 'bottom' } }, scales: { y: { beginAtZero: true } } }
-                  });
-                }
-                
-                // Pie chart for categories
-                const pieEl = document.getElementById('pieChart');
-                const categories = ${JSON.stringify(financeData?.categories || [])};
-                if (pieEl && !pieEl.chart && categories.length > 0) {
-                  const topCategories = categories.slice(0, 8);
-                  const otherAmount = categories.slice(8).reduce((sum, c) => sum + c.amount, 0);
-                  const pieLabels = topCategories.map(c => c.name);
-                  const pieData = topCategories.map(c => c.amount);
-                  if (otherAmount > 0) {
-                    pieLabels.push('Sonstiges');
-                    pieData.push(otherAmount);
-                  }
-                  const colors = ['#4f46e5', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b', '#ef4444', '#ec4899', '#6366f1', '#94a3b8'];
-                  pieEl.chart = new Chart(pieEl, {
-                    type: 'doughnut',
-                    data: {
-                      labels: pieLabels,
-                      datasets: [{ data: pieData, backgroundColor: colors.slice(0, pieLabels.length), borderWidth: 0 }]
-                    },
-                    options: { responsive: true, plugins: { legend: { position: 'right' } } }
-                  });
-                }
-              }
-            `
-          }}
-        />
-      )}
+      {/* Load Chart.js */}
+      <Script src="https://cdn.jsdelivr.net/npm/chart.js" strategy="afterInteractive" />
     </>
   );
 }
