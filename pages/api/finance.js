@@ -16,8 +16,26 @@ function parseGermanDate(dateStr) {
 // Get auth client - tries multiple methods
 async function getAuth() {
   const { google } = require('googleapis');
+  const fs = require('fs');
+  const path = require('path');
   
-  // Method 1: Use service account (for Vercel/production)
+  // Method 1: Use service account JSON file (local development)
+  const serviceAccountPath = path.join(process.env.HOME || process.env.USERPROFILE, '.config/google-calendar/service-account.json');
+  if (fs.existsSync(serviceAccountPath)) {
+    try {
+      const serviceAccount = JSON.parse(fs.readFileSync(serviceAccountPath, 'utf8'));
+      const auth = new google.auth.GoogleAuth({
+        credentials: serviceAccount,
+        scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+      });
+      console.log('Using service account from file:', serviceAccount.client_email);
+      return auth;
+    } catch (e) {
+      console.log('Error loading service account file:', e.message);
+    }
+  }
+  
+  // Method 2: Use service account from environment variables (Vercel/production)
   if (process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL && process.env.GOOGLE_PRIVATE_KEY) {
     const auth = new google.auth.GoogleAuth({
       credentials: {
@@ -29,17 +47,15 @@ async function getAuth() {
     return auth;
   }
   
-  // Method 2: Use OAuth token from environment (for Vercel with token)
+  // Method 3: Use OAuth token from environment (for Vercel with token)
   if (process.env.GOOGLE_ACCESS_TOKEN) {
     const auth = new google.auth.OAuth2();
     auth.setCredentials({ access_token: process.env.GOOGLE_ACCESS_TOKEN });
     return auth;
   }
   
-  // Method 3: Read from local token file (for development)
+  // Method 4: Read from local token file (for development)
   try {
-    const fs = require('fs');
-    const path = require('path');
     const tokenPath = path.join(process.env.HOME || process.env.USERPROFILE, '.config/google-calendar/token.json');
     
     if (fs.existsSync(tokenPath)) {
